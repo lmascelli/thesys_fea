@@ -1,5 +1,8 @@
 #define USE(X) (void)(X);
 
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_renumbering.h>
+#include <deal.II/dofs/dof_tools.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/grid/grid_out.h>
@@ -11,20 +14,24 @@
 using namespace dealii;
 using std::cout, std::endl;
 
-template <int dim> class SoundPressure {
-public:
+template <int dim>
+class SoundPressure {
+ public:
   SoundPressure();
   void run();
 
-private:
+ private:
   void make_grid();
+  void setup_system();
 
   Triangulation<dim> triangulation;
 };
 
-template <int dim> SoundPressure<dim>::SoundPressure() {}
+template <int dim>
+SoundPressure<dim>::SoundPressure() {}
 
-template <int dim> void SoundPressure<dim>::make_grid() {
+template <int dim>
+void SoundPressure<dim>::make_grid() {
   std::ifstream mesh("sound_pressure.msh");
   GridIn<dim> grid_in(triangulation);
   grid_in.read_msh(mesh);
@@ -34,7 +41,13 @@ template <int dim> void SoundPressure<dim>::make_grid() {
   grid_out.write_vtu(triangulation, out);
 }
 
-template <int dim> void SoundPressure<dim>::run() { make_grid(); }
+template <int dim>
+void SoundPressure<dim>::setup_system() {}
+
+template <int dim>
+void SoundPressure<dim>::run() {
+  make_grid();
+}
 
 int main(int argc, char **argv) {
   USE(argc)
