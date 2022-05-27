@@ -1,3 +1,10 @@
+# COMMANDS:
+# build
+# run
+# mesh
+# clear
+
+
 clear
 
 function CompileMesh ($n) {
@@ -14,7 +21,7 @@ function Compile {
     Push-Location build
     cmake -G"Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS=True ..
     cmake --build .
-    Copy-Item -Path compile_commands.json -Destination ..:
+    Copy-Item -Path compile_commands.json -Destination ..
     Pop-Location
   }
   else {

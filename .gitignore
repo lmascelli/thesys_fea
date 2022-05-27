@@ -1,3 +1,9 @@
 .cache/
+.local/
 build/
+.config/
+.npm
+.bash_history
+.bashrc
+.sudo_as_admin_successful
 compile_commands.json

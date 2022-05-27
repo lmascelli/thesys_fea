@@ -1,0 +1,13 @@
+run.ps1
+./run.ps1
+./run.ps1 build
+nvim
+clear
+nvim
+clear
+exit
+./run.ps1
+./run.ps1 build
+nvim
+clear
+exit

@@ -1,0 +1,10 @@
+./run.ps1
+./run.ps1 build
+clear
+./run.ps1 build
+clear
+ls
+cat ./run.ps1
+cat ./run.ps1 clear
+./run.ps1 clear
+./run.ps1 build
