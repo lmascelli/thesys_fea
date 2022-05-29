@@ -1,53 +1,101 @@
 SetFactory("OpenCASCADE");
 
-DefineConstant[
+// *************************** PARAMETERS DEFINES **********************
+
+DefineConstant [
 mea_inner_radius = {1.0, Name "Parameters/Mea inner radius"},
 mea_outer_radius = {1.3, Name "Parameters/Mea outer radius"} ,
 mea_base_thickness =  {1.0, Name "Parameters/Mea base thickness"}
+mea_ring_height = {3.0, Name "Parameters/Mea ring height"}
 ];
 
-// BASE BOTTOM
-Point(1) = {0, 0, -mea_base_thickness};
-Point(2) = {mea_outer_radius, 0, -mea_base_thickness};
-Point(3) = {-mea_outer_radius, 0, -mea_base_thickness};
-Circle(1) = {2, 1, 3};
-Circle(2) = {3, 1, 2};
+// **************************** NAMES DEFINES **************************
 
-Curve Loop (1) = {1, 2};
-Physical Curve (1) = {1};
+// POINTS_NAMES
+DefineConstant [
+BASE_BOTTOM_POINT_CENTER = {1},
+BASE_BOTTOM_POINT_1 = {2},
+BASE_BOTTOM_POINT_2 = {3},
+BASE_TOP_POINT_CENTER = {4},
+BASE_TOP_POINT_1 = {5},
+BASE_TOP_POINT_2 = {6},
+RING_INNER_POINT_1 = {7},
+RING_INNER_POINT_2 = {8}
+];
 
-Plane Surface (1) = {1};
-Physical Surface (1) = {1};
+// CURVE_NAMES
+DefineConstant [
+BASE_BOTTOM_CURVE = {1},
+BASE_TOP_CURVE = {2}
+RING_INNER_CURVE = {3}
+];
 
-// BASE TOP
-Point(4) = {0, 0, 0};
-Point(5) = {mea_inner_radius, 0, 0};
-Point(6) = {-mea_inner_radius, 0, 0};
-Point(7) = {mea_outer_radius, 0, 0};
-Point(8) = {-mea_outer_radius, 0, 0};
-Circle(3) = {5, 4, 6};
-Circle(4) = {6, 4, 5};
-Circle(5) = {7, 4, 8};
-Circle(6) = {8, 4, 7};
+// SURFACE_NAMES
+DefineConstant [
+BASE_BOTTOM_SURF = {1},
+BASE_TOP_SURF = {2},
+RING_BASE_SURF = {3},
+BASE_CYLINDER_SURF = {4}
+];
 
-Curve Loop (2) = {3, 4};
-Curve Loop (3) = {5, 6};
+// VOLUME_NAMES
+DefineConstant [
+BASE_VOLUME = {1}
+];
 
-Physical Curve (2) = {2};
-Physical Curve (3) = {3};
+// **************************** BASE ***********************************
 
-Plane Surface (2) = {2, 3};
-Plane Surface (3) = {3};
+// BOTTOM
+Point(BASE_BOTTOM_POINT_CENTER) = {0, 0, -mea_base_thickness};
+Point(BASE_BOTTOM_POINT_1) = {mea_outer_radius, 0, -mea_base_thickness};
+Point(BASE_BOTTOM_POINT_2) = {-mea_outer_radius, 0, -mea_base_thickness};
 
-Physical Surface (2) = {2};
-Physical Surface (3) = {3};
+Circle(1) = {BASE_BOTTOM_POINT_1, BASE_BOTTOM_POINT_CENTER, BASE_BOTTOM_POINT_2};
+Circle(2) = {BASE_BOTTOM_POINT_2, BASE_BOTTOM_POINT_CENTER, BASE_BOTTOM_POINT_1};
 
-// BASE BORDERS
-Cylinder (4) = {0, 0, 0, 0, 0, -mea_base_thickness, mea_outer_radius};
-Physical Surface(4) = {4};
+Curve Loop (BASE_BOTTOM_CURVE) = {1, 2};
+Physical Curve (BASE_BOTTOM_CURVE) = {BASE_BOTTOM_CURVE};
 
-Surface Loop (2) = {1, 2, 3 ,4};
-Volume (1) = {1};
+Plane Surface (BASE_BOTTOM_SURF) = {BASE_BOTTOM_CURVE};
+Physical Surface (BASE_BOTTOM_SURF) = {BASE_BOTTOM_SURF};
+
+// TOP
+Point(BASE_TOP_POINT_CENTER) = {0, 0, 0};
+Point(BASE_TOP_POINT_1) = {mea_outer_radius, 0, 0};
+Point(BASE_TOP_POINT_2) = {-mea_outer_radius, 0, 0};
+Circle(3) = {BASE_TOP_POINT_1, BASE_TOP_POINT_CENTER, BASE_TOP_POINT_2};
+Circle(4) = {BASE_TOP_POINT_2, BASE_TOP_POINT_CENTER, BASE_TOP_POINT_1};
+
+Curve Loop (BASE_TOP_CURVE) = {3, 4};
+
+Physical Curve (BASE_TOP_CURVE) = {BASE_TOP_CURVE};
+
+Plane Surface (BASE_TOP_SURF) = {BASE_TOP_CURVE};
+Physical Surface (BASE_TOP_SURF) = {BASE_TOP_SURF};
+
+// RING
+
+Point(RING_INNER_POINT_1) = {mea_inner_radius, 0, 0};
+Point(RING_INNER_POINT_2) = {-mea_inner_radius, 0, 0};
+
+Circle(5) = {RING_INNER_POINT_1, BASE_TOP_POINT_CENTER, RING_INNER_POINT_2};
+Circle(6) = {RING_INNER_POINT_2, BASE_TOP_POINT_CENTER, RING_INNER_POINT_1};
+Curve Loop (RING_INNER_CURVE) = {5, 6};
+
+Plane Surface (RING_BASE_SURF) = {BASE_TOP_CURVE,
+                                  RING_INNER_CURVE};
+
+Physical Surface (RING_BASE_SURF) = {RING_BASE_SURF};
+
+
+// CYLINDER
+Cylinder (BASE_CYLINDER_SURF) = {0, 0, 0, 0, 0, -mea_base_thickness, mea_outer_radius};
+Physical Surface(BASE_CYLINDER_SURF) = {BASE_CYLINDER_SURF};
+
+Surface Loop (2) = {BASE_BOTTOM_SURF, BASE_CYLINDER_SURF, BASE_TOP_SURF};
+Volume (BASE_VOLUME) = {2};
+
+// ***************************** MESH **********************************
 
 Mesh.Algorithm = 8;
 Mesh.RecombineAll = 1;
