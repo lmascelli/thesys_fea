@@ -16,20 +16,28 @@ mea_water_height = {1.0, Name "Parameters/Mea water height"}
 origin = newp; Point(origin) = {0, 0, 0};
 
 innerp1 = newp; Point(innerp1) = {-mea_ring_inner_radius, 0, 0};    
-innerp2 = newp; Point(innerp2) = {mea_ring_inner_radius, 0, 0};    
+innerp2 = newp; Point(innerp2) = {0, mea_ring_inner_radius, 0};    
+innerp3 = newp; Point(innerp3) = {mea_ring_inner_radius, 0, 0};    
+innerp4 = newp; Point(innerp4) = {0, -mea_ring_inner_radius, 0}; 
 
 innerc1 = newl; Circle(innerc1) = {innerp1, origin, innerp2};                        
-innerc2 = newl; Circle(innerc2) = {innerp2, origin, innerp1};                        
+innerc2 = newl; Circle(innerc2) = {innerp2, origin, innerp3};                        
+innerc3 = newl; Circle(innerc3) = {innerp3, origin, innerp4};                        
+innerc4 = newl; Circle(innerc4) = {innerp4, origin, innerp1};                        
 
-innerc = newll; Curve Loop(innerc) = {innerc1, innerc2};                      
+innerc = newll; Curve Loop(innerc) = {innerc1, innerc2, innerc3, innerc4};                      
 
 outerp1 = newp; Point(outerp1) = {-mea_ring_outer_radius, 0, 0};    
-outerp2 = newp; Point(outerp2) = {mea_ring_outer_radius, 0, 0};    
+outerp2 = newp; Point(outerp2) = {0, mea_ring_outer_radius, 0};    
+outerp3 = newp; Point(outerp3) = {mea_ring_outer_radius, 0, 0};    
+outerp4 = newp; Point(outerp4) = {0, -mea_ring_outer_radius, 0};    
 
 outerc1 = newl; Circle(outerc1) = {outerp1, origin, outerp2};                      
-outerc2 = newl; Circle(outerc2) = {outerp2, origin, outerp1};                     
+outerc2 = newl; Circle(outerc2) = {outerp2, origin, outerp3};                     
+outerc3 = newl; Circle(outerc3) = {outerp3, origin, outerp4};                      
+outerc4 = newl; Circle(outerc4) = {outerp4, origin, outerp1};                     
 
-outerc = newl; Curve Loop(outerc) = {outerc1, outerc2};                       
+outerc = newl; Curve Loop(outerc) = {outerc1, outerc2, outerc3, outerc4};                       
 rings = news; Plane Surface(rings) = {outerc, innerc};
 
 basep1 = newp; Point(basep1) = {-mea_base_side_length/2, mea_base_side_length/2, 0};
