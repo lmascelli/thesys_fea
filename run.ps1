@@ -6,7 +6,7 @@
 
 
 clear
-Set-PSDebug -Trace 1
+echo on
 
 function CompileMesh ($n) {
   if (!(($n -eq 2) -or ($n -eq 3))) {
