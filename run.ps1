@@ -6,13 +6,14 @@
 
 
 clear
+Set-PSDebug -Trace 1
 
 function CompileMesh ($n) {
   if (!(($n -eq 2) -or ($n -eq 3))) {
     Write-Output "Invalid parameter"
   }
   else {
-    gmsh -$n ./mesh.geo -o build/sound_pressure.msh
+    gmsh ./mesh.geo -$n -o build/sound_pressure.vtk
   }
 }
 

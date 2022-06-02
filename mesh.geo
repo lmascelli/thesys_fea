@@ -3,13 +3,15 @@ SetFactory("OpenCASCADE");
 // *************************** PARAMETERS DEFINES **********************
 
 DefineConstant [
-mea_ring_inner_radius = {1.3, Name "Parameters/Mea inner radius"} ,
-mea_ring_outer_radius = {1.5, Name "Parameters/Mea outer radius"} ,
-mea_base_thickness =  {1.0, Name "Parameters/Mea base thickness"} ,
-mea_ring_height = {3.0, Name "Parameters/Mea ring height"},
+mea_ring_inner_radius = {0.9, Name "Parameters/Mea ring inner radius"} ,
+mea_ring_thickness = {0.1, Name "Parameters/Mea ring thickness"} ,
+mea_base_thickness =  {0.1, Name "Parameters/Mea base thickness"} ,
+mea_ring_height = {0.5, Name "Parameters/Mea ring height"},
 mea_base_side_length = {5.0, Name "Parameters/Mea base side length"},
-mea_water_height = {1.0, Name "Parameters/Mea water height"}
+mea_water_height = {0.3, Name "Parameters/Mea water height"}
 ];
+
+mea_ring_outer_radius = mea_ring_inner_radius + mea_ring_thickness;
 
 // ***************************** GEOMETRY ******************************
 
@@ -56,27 +58,39 @@ bases = news; Plane Surface(bases) = {basec};
 
 waters = news; Plane Surface(waters) = {innerc};
 
+// RING
+
+
 ring_entities[] = Extrude {0, 0, mea_ring_height} {
-  Surface{rings}; Layers {5}; Recombine;
+  Surface{rings}; Layers {5};
 };
 
+/*
 Physical Surface(1) = {rings, ring_entities[0], ring_entities[2],
-                       ring_entities[3], ring_entities[4], ring_entities[5]};
+                       ring_entities[3], ring_entities[4], ring_entities[5],
+                       ring_entities[6], ring_entities[7], ring_entities[8],
+                       ring_entities[9]};
+*/
 
 ringvs = newsl; Surface Loop (ringvs) = {rings, ring_entities[0], ring_entities[2],
-                       ring_entities[3], ring_entities[4], ring_entities[5]};
+                       ring_entities[3], ring_entities[4], ring_entities[5],
+                       ring_entities[6], ring_entities[7], ring_entities[8],
+                       ring_entities[9]};
 
 ringv = newv; Volume (ringv) = {ringvs};
 Physical Volume (1) = {ringv};
 
-Color Green {Physical Volume {1};}
+
+// BASE
 
 base_entities[] = Extrude {0, 0, -mea_base_thickness} {
-  Surface{bases}; Layers {5}; Recombine;
+  Surface{bases}; Layers {5};
 };
 
+/*
 Physical Surface(2) = {bases, base_entities[0], base_entities[2],
                        base_entities[3], base_entities[4], base_entities[5]};
+*/
 
 basevs = newsl; Surface Loop (basevs) = {bases, base_entities[0], base_entities[2],
                        base_entities[3], base_entities[4], base_entities[5]};
@@ -84,23 +98,22 @@ basevs = newsl; Surface Loop (basevs) = {bases, base_entities[0], base_entities[
 basev = newv; Volume (basev) = {basevs};
 Physical Volume (2) = {basev};
 
-Color Red {Physical Volume {2};}
+// WATER
 
 water_entities[] = Extrude {0, 0, mea_water_height} {
-  Surface{waters}; Layers {5}; Recombine;
+  Surface{waters}; Layers {5};
 };
 
-Physical Surface(3) = {waters, water_entities[0], water_entities[1],
-                      water_entities[2]};
+/*
+Physical Surface(3) = {waters, water_entities[0], water_entities[2],
+                      water_entities[4], water_entities[4], water_entities[5]};
+*/
 
-watervs = newsl; Surface Loop (watervs) = {waters, water_entities[0], water_entities[1],
-                      water_entities[2]};
+watervs = newsl; Surface Loop (watervs) = {waters, water_entities[0], water_entities[2],
+                      water_entities[3], water_entities[4], water_entities[5]};
 
 waterv = newv; Volume (waterv) = {watervs};
 Physical Volume (3) = {waterv};
-Color Blue {Physical Volume {3};}                      
-
-
 
 // ***************************** MESH **********************************
 
@@ -108,3 +121,8 @@ Mesh.Algorithm = 8;
 Mesh.RecombineAll = 1;
 Mesh.SaveParametric = 0;
 Mesh.SaveAll = 1;
+Mesh.Format = 16;
+//+
+Extrude {0, 0, 1} {
+  Surface{17}; Layers {5}; 
+}

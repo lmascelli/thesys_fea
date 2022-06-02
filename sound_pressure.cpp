@@ -14,47 +14,74 @@
 using namespace dealii;
 using std::cout, std::endl;
 
-template <int dim>
 class SoundPressure {
  public:
   SoundPressure();
   void run();
 
  private:
-  void make_grid();
+  /**
+   * @brief         Create the mesh structure.
+   * @param gmsh:   load extern mesh [default false]
+   * @param path:   path of the extern mesh
+   *
+   * @return void
+   */
+  void make_grid(bool gmsh = false, std::string path = "sound_pressure.msh");
   void setup_system();
 
-  Triangulation<dim> triangulation;
+  Triangulation<3> triangulation;
+
+  /* Mesh parameters
+   * UNITS:
+   * length - cm
+   *
+   */
+  float mea_base_side_length = 5;
+  float mea_base_thickness = 0.1;
+  float mea_ring_outer_radius = 2.2;
 };
 
-template <int dim>
-SoundPressure<dim>::SoundPressure() {}
+SoundPressure::SoundPressure() {}
 
-template <int dim>
-void SoundPressure<dim>::make_grid() {
-  std::ifstream mesh("sound_pressure.msh");
-  GridIn<dim> grid_in(triangulation);
-  grid_in.read_msh(mesh);
+void SoundPressure::make_grid(bool gmsh, std::string path) {
+  if (gmsh) {
+    std::ifstream mesh(path);
+    GridIn<3> grid_in(triangulation);
+    grid_in.read_msh(mesh);
+  } else {
+    /*
+     * the following approach is to generate the mesh by extruding a 2d sketch
+     * all by dealii script commands.
+     */
 
+    // TEMPORARY 2D SKETCH
+
+    // BASE
+    Point<3> corner1 = {-mea_base_side_length / 2, mea_base_side_length / 2, 0};
+    Point<3> corner2 = {mea_base_side_length / 2, -mea_base_side_length / 2,
+                        mea_base_thickness};
+    Triangulation<2> sketch;
+    GridGenerator::plate_with_a_hole(sketch, mea_ring_outer_radius,
+                                     mea_base_side_length);
+    GridGenerator::extrude_triangulation(sketch, {0, 0, 1}, triangulation);
+    triangulation.refine_global(5);
+  }
   GridOut grid_out;
   std::ofstream out("sound_pressure.vtu");
   grid_out.write_vtu(triangulation, out);
 }
 
-template <int dim>
-void SoundPressure<dim>::setup_system() {}
+void SoundPressure::setup_system() {}
 
-template <int dim>
-void SoundPressure<dim>::run() {
-  make_grid();
-}
+void SoundPressure::run() { make_grid(); }
 
 int main(int argc, char **argv) {
   USE(argc)
   USE(argv)
 
   try {
-    SoundPressure<2> sound_pressure;
+    SoundPressure sound_pressure;
     sound_pressure.run();
   } catch (std::exception &exc) {
     cout << "Abort!" << endl
