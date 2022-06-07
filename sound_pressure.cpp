@@ -1,14 +1,19 @@
 // That's just for avoiding some annoying unused variable warnings.
 #define USE(X) (void)(X);
 
+#include <deal.II/base/quadrature.h>
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/dofs/dof_renumbering.h>
 #include <deal.II/dofs/dof_tools.h>
+#include <deal.II/fe/fe_q.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_in.h>
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/grid/tria.h>
+#include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/lac/sparsity_pattern.h>
 
 #include <fstream>
 #include <iostream>
@@ -64,7 +69,7 @@ class SoundPressure {
    *        to the boundary conditions.
    *        This is the point where the system equations play their role.
    */
-  void build_system();
+  void assemble_system();
 
   /**
    * @brief For now it just solves the system to the required precision or
@@ -95,8 +100,16 @@ class SoundPressure {
    *
    ***************************************************************************/
 
-  Triangulation<3> triangulation;
+  Triangulation<3> triangulation;  // mesh nodes representation in dealii
+  DoFHandler<3> dof_handler;       // a manager class for all degrees of freedom
 
+  FE_Q<3> fe_q;  // scalar Lagrange finite element
+                 // interpolating function
+
+  SparsityPattern sparsity_pattern;  // sparse matrix pattern manager
+  SparseMatrix<double> system_matrix;
+  Vector<double> system_rhs;
+  Vector<double> solution;
   /****************************************************************************
    *
    *                          MESH PARAMETERS
@@ -116,7 +129,17 @@ class SoundPressure {
   float mea_water_heigth = 0.3;
 };
 
-SoundPressure::SoundPressure() {}
+/**
+ * In the constructor it's being assigned the handler of the degrees of
+ * freedom to the corresponding triangulation and as interpolating function
+ * a polynomial function of degree 1; to have a higher polynomial degree
+ * it's only needed to change this value
+ */
+
+#define POLY_DEGREE 1
+
+SoundPressure::SoundPressure()
+    : dof_handler(triangulation), fe_q(POLY_DEGREE) {}
 
 void SoundPressure::make_grid(bool gmsh, std::string path) {
   // if gmsh just load the extern mesh script in the system triangulation.
@@ -167,9 +190,18 @@ void SoundPressure::make_grid(bool gmsh, std::string path) {
   }
 }
 
-void SoundPressure::setup_system() {}
+void SoundPressure::setup_system() {
+  dof_handler.distribute_dofs(fe_q);
+  DynamicSparsityPattern dsp(dof_handler.n_dofs());
+  DoFTools::make_sparsity_pattern(dof_handler, dsp);
+  sparsity_pattern.copy_from(dsp);
+  system_matrix.reinit(sparsity_pattern);
 
-void SoundPressure::build_system() {}
+  solution.reinit(dof_handler.n_dofs());
+  system_rhs.reinit(dof_handler.n_dofs());
+}
+
+void SoundPressure::assemble_system() {}
 
 void SoundPressure::solve_system() {}
 
