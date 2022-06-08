@@ -207,7 +207,7 @@ void SoundPressure::solve_system() {}
 
 void SoundPressure::refine_system() {}
 
-void SoundPressure::run() { make_grid(true, "sound_pressure.msh"); }
+void SoundPressure::run() { make_grid(true, "../mesh.msh"); }
 
 int main(int argc, char **argv) {
   USE(argc)
