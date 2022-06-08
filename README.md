@@ -35,3 +35,8 @@ and to run it
 
 the image will provide a shared folder named ___shared___ int the home folder
 linked with the [SHARED-DIR] you've provided.
+
+the to build the executable run
+```pwsh
+./run.ps1 build
+```
