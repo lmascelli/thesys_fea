@@ -149,7 +149,7 @@ void SoundPressure::make_grid(bool gmsh, std::string path) {
   // Export the used triangulation for checking it's correct.
   {
     GridOut grid_out;
-    std::ofstream out("sound_pressure.vtu");
+    std::ofstream out("../assets/sound_pressure.vtu");
     grid_out.write_vtu(triangulation, out);
   }
 }
@@ -209,7 +209,11 @@ void SoundPressure::assemble_system() {
 
   std::map<types::global_dof_index, double> boundary_values;
   VectorTools::interpolate_boundary_values(
-      dof_handler, 0, Functions::ZeroFunction<3>(), boundary_values);
+      dof_handler, 1, Functions::ConstantFunction<3>(100.0), boundary_values);
+  VectorTools::interpolate_boundary_values(
+      dof_handler, 2, Functions::ConstantFunction<3>(2.0), boundary_values);
+  VectorTools::interpolate_boundary_values(
+      dof_handler, 5, Functions::ConstantFunction<3>(1.0) ,boundary_values);
   MatrixTools::apply_boundary_values(boundary_values, system_matrix, solution,
                                      system_rhs);
 }
@@ -229,13 +233,13 @@ void SoundPressure::process_output() {
   data_out.add_data_vector(solution, "solution");
   data_out.build_patches();
 
-  std::ofstream output("solution.vtk");
+  std::ofstream output("../assets/solution.vtk");
   data_out.write_vtk(output);
 }
 
 void SoundPressure::run() {
   do {
-    make_grid(true, "../mesh.msh");
+    make_grid(true, "../assets/mesh.msh");
     setup_system();
     assemble_system();
     solve_system();
