@@ -201,7 +201,9 @@ void SoundPressure::setup_system() {
   system_rhs.reinit(dof_handler.n_dofs());
 }
 
-void SoundPressure::assemble_system() {}
+void SoundPressure::assemble_system() {
+  
+}
 
 void SoundPressure::solve_system() {}
 
