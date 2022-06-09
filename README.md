@@ -40,3 +40,8 @@ the to build the executable run
 ```pwsh
 ./run.ps1 build
 ```
+
+## results
+
+### gmsh mesh
+<img src="assets/mea_mesh.png">GMSH mesh</img>
