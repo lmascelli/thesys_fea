@@ -70,13 +70,13 @@ Physical Surface(1) = {rings, ring_entities[0], ring_entities[2],
                        ring_entities[6], ring_entities[7], ring_entities[8],
                        ring_entities[9]};
 
-ringvs = newsl; Surface Loop (ringvs) = {rings, ring_entities[0], ring_entities[2],
-                       ring_entities[3], ring_entities[4], ring_entities[5],
-                       ring_entities[6], ring_entities[7], ring_entities[8],
-                       ring_entities[9]};
-
-ringv = newv; Volume (ringv) = {ringvs};
-Physical Volume (2) = {ringv};
+// ringvs = newsl; Surface Loop (ringvs) = {rings, ring_entities[0], ring_entities[2],
+//                        ring_entities[3], ring_entities[4], ring_entities[5],
+//                        ring_entities[6], ring_entities[7], ring_entities[8],
+//                        ring_entities[9]};
+// 
+// ringv = newv; Volume (ringv) = {ringvs};
+Physical Volume (1) = {ring_entities[1]};
 
 
 // BASE
@@ -85,14 +85,14 @@ base_entities[] = Extrude {0, 0, -mea_base_thickness} {
   Surface{bases}; Layers {5}; Recombine;
 };
 
-Physical Surface(3) = {bases, base_entities[0], base_entities[2],
+Physical Surface(2) = {bases, base_entities[0], base_entities[2],
                        base_entities[3], base_entities[4], base_entities[5]};
 
-basevs = newsl; Surface Loop (basevs) = {bases, base_entities[0], base_entities[2],
-                       base_entities[3], base_entities[4], base_entities[5]};
-
-basev = newv; Volume (basev) = {basevs};
-Physical Volume (4) = {basev};
+// basevs = newsl; Surface Loop (basevs) = {bases, base_entities[0], base_entities[2],
+//                        base_entities[3], base_entities[4], base_entities[5]};
+// 
+// basev = newv; Volume (basev) = {basevs};
+Physical Volume (2) = {base_entities[1]};
 
 // WATER
 
@@ -100,19 +100,19 @@ water_entities[] = Extrude {0, 0, mea_water_height} {
   Surface{waters}; Layers {5}; Recombine;
 };
 
-Physical Surface(5) = {waters, water_entities[0], water_entities[2],
+Physical Surface(3) = {waters, water_entities[0], water_entities[2],
                       water_entities[4], water_entities[4], water_entities[5]};
 
-watervs = newsl; Surface Loop (watervs) = {waters, water_entities[0], water_entities[2],
-                      water_entities[3], water_entities[4], water_entities[5]};
-
-waterv = newv; Volume (waterv) = {watervs};
-Physical Volume (6) = {waterv};
+// watervs = newsl; Surface Loop (watervs) = {waters, water_entities[0], water_entities[2],
+//                       water_entities[3], water_entities[4], water_entities[5]};
+// 
+// waterv = newv; Volume (waterv) = {watervs};
+Physical Volume (3) = {water_entities[1]};
 
 // ***************************** MESH **********************************
 
 Mesh.Algorithm = 8;                   // Frontal-Delunay (all quads)
-Mesh.SubdivisionAlgorith = 2;         // all hexahedra
+Mesh.SubdivisionAlgorithm = 2;         // all hexahedra
 Mesh.RecombineAll = 1;
 Mesh.SaveParametric = 0;
 Mesh.SaveAll = 1;

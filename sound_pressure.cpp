@@ -12,8 +12,14 @@
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/solver_control.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/sparsity_pattern.h>
+#include <deal.II/numerics/data_out.h>
+#include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/vector_tools.h>
 
 #include <fstream>
 #include <iostream>
@@ -86,7 +92,7 @@ class SoundPressure {
    *        by cell. With this information refine then the cells where the
    *        error is too large and maybe coarse those where the error is low.
    */
-  void refine_system();
+  bool refine_system();
 
   /**
    * @brief Eventual post processing elaboration and selection of data to
@@ -114,19 +120,7 @@ class SoundPressure {
    *
    *                          MESH PARAMETERS
    *
-   ***************************************************************************/
-  /*
-   * UNITS:
-   * length - cm
-   *
    */
-
-  float mea_base_side_length = 5;
-  float mea_base_thickness = 0.1;
-  float mea_ring_outer_radius = 1.1;
-  float mea_ring_thickness = 0.1;
-  float mea_ring_heigth = 0.5;
-  float mea_water_heigth = 0.3;
 };
 
 /**
@@ -150,36 +144,6 @@ void SoundPressure::make_grid(bool gmsh, std::string path) {
   }
   // else build it with deal.ii functions.
   else {
-    /*
-     * that's still under construction because i found the gmsh approach more
-     * efficient but i'm keeping this second way open.
-     * the following approach is to generate the mesh by extruding a 2d sketch
-     * all by dealii script commands.
-     */
-
-    // TEMPORARY 2D SKETCH
-
-    // BASE
-    Triangulation<3> base;
-    Point<3> corner1 = {-mea_base_side_length / 2, mea_base_side_length / 2, 0};
-    Point<3> corner2 = {mea_base_side_length / 2, -mea_base_side_length / 2,
-                        -mea_base_thickness};
-    GridGenerator::hyper_rectangle(base, corner1, corner2);
-
-    // RING
-    Triangulation<3> ring;
-    GridGenerator::cylinder_shell(ring, mea_ring_heigth,
-                                  mea_ring_outer_radius - mea_ring_thickness,
-                                  mea_ring_outer_radius);
-
-    GridGenerator::merge_triangulations(base, ring, triangulation);
-
-    // WATER
-    Triangulation<3> water;
-    GridGenerator::cylinder(water, mea_ring_outer_radius - mea_ring_thickness,
-                            mea_water_heigth / 2);
-
-    GridGenerator::merge_triangulations(triangulation, water, triangulation);
   }
 
   // Export the used triangulation for checking it's correct.
@@ -202,14 +166,82 @@ void SoundPressure::setup_system() {
 }
 
 void SoundPressure::assemble_system() {
-  
+  const QGauss<3> quadrature_formula(fe_q.degree + 1);
+
+  FEValues<3> fe_values(fe_q, quadrature_formula,
+                        update_values | update_gradients |
+                            update_quadrature_points | update_JxW_values);
+
+  const unsigned int dofs_per_cell = fe_q.n_dofs_per_cell();
+
+  FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
+  Vector<double> cell_rhs(dofs_per_cell);
+
+  std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+
+  for (const auto &cell : dof_handler.active_cell_iterators()) {
+    cell_matrix = 0;
+    cell_rhs = 0;
+    fe_values.reinit(cell);
+
+    // cycle and fill the system_matrix HERE
+    // at the moment i'll use simple Laplace equation just for test
+    for (const unsigned int q_index : fe_values.quadrature_point_indices()) {
+      for (const unsigned int i : fe_values.dof_indices()) {
+        for (const unsigned int j : fe_values.dof_indices())
+          cell_matrix(i, j) += fe_values.shape_grad(i, q_index) *
+                               fe_values.shape_grad(j, q_index) *
+                               fe_values.JxW(q_index);
+        cell_rhs(i) +=
+            (fe_values.shape_value(i, q_index) * fe_values.JxW(q_index));
+      }
+    }
+
+    cell->get_dof_indices(local_dof_indices);
+
+    for (const unsigned int i : fe_values.dof_indices()) {
+      for (const unsigned int j : fe_values.dof_indices())
+        system_matrix.add(local_dof_indices[i], local_dof_indices[j],
+                          cell_matrix(i, j));
+      system_rhs(local_dof_indices[i]) += cell_rhs(i);
+    }
+  }
+
+  std::map<types::global_dof_index, double> boundary_values;
+  VectorTools::interpolate_boundary_values(
+      dof_handler, 0, Functions::ZeroFunction<3>(), boundary_values);
+  MatrixTools::apply_boundary_values(boundary_values, system_matrix, solution,
+                                     system_rhs);
 }
 
-void SoundPressure::solve_system() {}
+void SoundPressure::solve_system() {
+  SolverControl solver_control(1000, 1e-12);
+  SolverCG<Vector<double>> solver(solver_control);
 
-void SoundPressure::refine_system() {}
+  solver.solve(system_matrix, solution, system_rhs, PreconditionIdentity());
+}
 
-void SoundPressure::run() { make_grid(true, "sound_pressure.msh"); }
+bool SoundPressure::refine_system() { return false; }
+
+void SoundPressure::process_output() {
+  DataOut<3> data_out;
+  data_out.attach_dof_handler(dof_handler);
+  data_out.add_data_vector(solution, "solution");
+  data_out.build_patches();
+
+  std::ofstream output("solution.vtk");
+  data_out.write_vtk(output);
+}
+
+void SoundPressure::run() {
+  do {
+    make_grid(true, "../mesh.msh");
+    setup_system();
+    assemble_system();
+    solve_system();
+  } while (refine_system());
+  process_output();
+}
 
 int main(int argc, char **argv) {
   USE(argc)
