@@ -44,4 +44,4 @@ the to build the executable run
 ## results
 
 ### gmsh mesh
-<img src="assets/mea_mesh.png">GMSH mesh</img>
+<img src="assets/mea_mesh.png"/>
