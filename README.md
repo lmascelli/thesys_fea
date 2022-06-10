@@ -45,7 +45,9 @@ the to build the executable run
 
 ### gmsh mesh
 the mesh
+
 <img src="assets/mea_mesh.png"/>
 
 the solution for laplace equation
+
 <img src="assets/solution.png" />
