@@ -58,7 +58,7 @@ class SoundPressure {
    *
    * @return void
    */
-  void make_grid(bool gmsh = false, std::string path = "sound_pressure.msh");
+  void make_grid(std::string path = "");
 
   /**
    * @brief Creates the system's matrix, right hand side and the initial
@@ -116,11 +116,12 @@ class SoundPressure {
   SparseMatrix<double> system_matrix;
   Vector<double> system_rhs;
   Vector<double> solution;
+
   /****************************************************************************
    *
    *                          MESH PARAMETERS
    *
-   */
+   ***************************************************************************/
 };
 
 /**
@@ -135,12 +136,16 @@ class SoundPressure {
 SoundPressure::SoundPressure()
     : dof_handler(triangulation), fe_q(POLY_DEGREE) {}
 
-void SoundPressure::make_grid(bool gmsh, std::string path) {
-  // if gmsh just load the extern mesh script in the system triangulation.
-  if (gmsh) {
+void SoundPressure::make_grid(std::string path) {
+  // if a path is given just load the extern mesh script in the system
+  // triangulation.
+  if (!path.empty()) {
     std::ifstream mesh(path);
     GridIn<3> grid_in(triangulation);
     grid_in.read_msh(mesh);
+
+    for (auto s : triangulation.get_boundary_ids())
+      std::cout << "Boundary index: " << s << std::endl;
   }
   // else build it with deal.ii functions.
   else {
@@ -209,11 +214,13 @@ void SoundPressure::assemble_system() {
 
   std::map<types::global_dof_index, double> boundary_values;
   VectorTools::interpolate_boundary_values(
-      dof_handler, 1, Functions::ConstantFunction<3>(100.0), boundary_values);
+      dof_handler, 0, Functions::ConstantFunction<3>(51.), boundary_values);
   VectorTools::interpolate_boundary_values(
-      dof_handler, 2, Functions::ConstantFunction<3>(2.0), boundary_values);
+      dof_handler, 1, Functions::ConstantFunction<3>(51.), boundary_values);
   VectorTools::interpolate_boundary_values(
-      dof_handler, 5, Functions::ConstantFunction<3>(1.0) ,boundary_values);
+      dof_handler, 2, Functions::ConstantFunction<3>(1.0), boundary_values);
+  VectorTools::interpolate_boundary_values(
+      dof_handler, 5, Functions::ConstantFunction<3>(1.), boundary_values);
   MatrixTools::apply_boundary_values(boundary_values, system_matrix, solution,
                                      system_rhs);
 }
@@ -239,7 +246,7 @@ void SoundPressure::process_output() {
 
 void SoundPressure::run() {
   do {
-    make_grid(true, "../assets/mesh.msh");
+    make_grid("../assets/mesh.msh");
     setup_system();
     assemble_system();
     solve_system();
