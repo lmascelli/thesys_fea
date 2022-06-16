@@ -147,8 +147,9 @@ void SoundPressure::make_grid(std::string path) {
     for (auto s : triangulation.get_boundary_ids())
       std::cout << "Boundary index: " << s << std::endl;
   }
-  // else build it with deal.ii functions.
+  // else use a simple one as test
   else {
+    GridGenerator::hyper_cube(triangulation);
   }
 
   // Export the used triangulation for checking it's correct.
@@ -246,7 +247,7 @@ void SoundPressure::process_output() {
 
 void SoundPressure::run() {
   do {
-    make_grid("../assets/mesh.msh");
+    make_grid();
     setup_system();
     assemble_system();
     solve_system();
