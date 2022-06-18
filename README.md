@@ -4,6 +4,8 @@ My thesis FEM analysis
 ## build
 
 ### requirements.
+-   CMake
+-   GNU C++ or Clang++ compiler
 -   [deal.ii](https://www.dealii.org)
 -   [gmsh](https://gmsh.info) for modify mesh
 -   [paraview](https://paraview.org) to post process and visualize data
@@ -37,7 +39,7 @@ the image will provide a shared folder named ___shared___ int the home folder
 linked with the [SHARED-DIR] you've provided.
 
 the to build the executable run
-```pwsh
+```powershell
 ./run.ps1 build
 ```
 
