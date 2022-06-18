@@ -18,3 +18,21 @@ L'intero codice dovrebbe comunque essere costituito da:
   - **sound_pressure.cpp**: sorgente c++ del programma
   - **run.ps1**: script di PowerShell che automatizza la maggior parte del
     processo di compilazione, esecuzione.
+  - **Dockerfile**: script di Docker per generare un'immagine in grado di
+    compliare, eseguire ed esportare la simulazione ed i suoi risultati.
+
+
+## run.ps1
+```
+./run.ps1 COMMAND
+
+commands:
+  build:            build the sound_pressure.cpp source
+  run               run the simulation
+  mesh              build the gmsh's mesh
+  clear             clear the project
+  docker_create     create a container from deal.ii image
+  docker_rm         remove the created image
+```
+
+## deal.ii
