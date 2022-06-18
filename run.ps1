@@ -78,7 +78,7 @@ if (!$args[0])
       } else
       {
         $source_dir = $args[1]
-        $cmd =  "docker container create -i -t --name deal.ii -p 3000 --mount type=bind,source=" + $source_dir + ",target=/home/dealii dealii pwsh"
+        $cmd =  "docker container create -i -t --name deal.ii -p 3000 --mount type=bind,source=" + $source_dir + ",target=/home/dealii/shared dealii pwsh"
         
         Write-Output $cmd
         Invoke-Expression $cmd
